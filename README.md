@@ -2,6 +2,8 @@
 
 Simple telnet client lib, written in golang.
 
+Some docs: https://godoc.org/github.com/ircop/tclient
+
 Example usage:
 
 main.go:
