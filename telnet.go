@@ -1,3 +1,5 @@
+// Package ctelnet provides simple telnet client library, mainly designed for iteractions with
+// various network equipment such as switches, routers, etc.
 package tclient
 
 import (
@@ -13,6 +15,7 @@ type callbackPattern struct {
 	SkipLine	bool
 }
 
+// TelnetClient is telnet client struct itself
 type TelnetClient struct {
 	// Timeout of read/write operations
 	Timeout		int
@@ -29,6 +32,7 @@ type TelnetClient struct {
 	patterns		[]callbackPattern
 }
 
+// New func creates new TelnetClient instance
 func New(tout int, prompt string) *TelnetClient {
 	if tout < 1 {
 		tout = 1
@@ -56,19 +60,24 @@ func New(tout int, prompt string) *TelnetClient {
 	return &c
 }
 
+// GlobalTimeout sets timeout for app operations, where net.Conn deadline could not be useful.
+// For example stucking in pagination, while some network devices refreshing their telnet screen - so
+// we cannot reach read timeout.
 func (c *TelnetClient) GlobalTimeout(t int) {
 	c.TimeoutGlobal = t
 }
 
-// SetLoginPrompt sets login prompt
+// SetLoginPrompt sets custom login prompt. Default is "[Uu]ser[Nn]ame\:$"
 func (c *TelnetClient) SetLoginPrompt(s string) {
 	c.loginPrompt = s
 }
 
+// SetPasswordPrompt sets custom password prompt. Default is "[Pp]ass[Ww]ord\:$"
 func (c *TelnetClient) SetPasswordPrompt(s string) {
 	c.passwordPrompt = s
 }
 
+// Close closes telnet connection. You can use it with defer.
 func (c *TelnetClient) Close() {
 	if !c.closed {
 		c.conn.Close()
@@ -110,6 +119,8 @@ func (c *TelnetClient) Open(host string, port int) error {
 	return nil
 }
 
+// RegisterCallback registers new callback based on regex string. When current output string matches given
+// regex, callback is called. Returns error if regex cannot be compiled.
 func (c *TelnetClient) RegisterCallback(pattern string, callback func()) error {
 	re, err := regexp.Compile(pattern)
 	if err != nil {

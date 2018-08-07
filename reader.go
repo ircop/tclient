@@ -8,6 +8,9 @@ import (
 	"regexp"
 )
 
+// ReadUntil reads tcp stream from server until 'waitfor' regex matches.
+// Returns gathered output and error, if any.
+// Any escape sequences are cutted out during reading for providing clean output for parsing/reading.
 func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 	var err error
 
@@ -135,39 +138,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 		}
 	}
 }
-/*
-func (c *TelnetClient) cutEscapes(buffer bytes.Buffer) string {
-	bts := buffer.Bytes()
-	result := ""
 
-	inSequence := false
-	for i := range bts {
-		if bts[i] == 27 {
-			inSequence = true
-			continue
-		}
-
-		if inSequence {
-			// 2) 0-?, @-~, ' ' - / === 48-63, 32-47, finish with 64-126
-			if bts[i] == 91 {
-				continue
-			}
-			if bts[i] >= 32 && bts[i] <= 63 {
-				// just skip it
-				continue
-			}
-			if bts[i] >= 64 && bts[i] <= 126 {
-				// finish sequence
-				inSequence = false
-				continue
-			}
-		}
-
-		result += string(bts[i])
-	}
-
-	return result
-}*/
 
 // read one byte from tcp stream
 func (c *TelnetClient) readByte() (byte, error) {
