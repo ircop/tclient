@@ -4,7 +4,14 @@ import (
 	"fmt"
 	"net"
 	"time"
+	"regexp"
 )
+
+type callbackPattern struct {
+	Re			*regexp.Regexp
+	Cb			func()
+	SkipLine	bool
+}
 
 type TelnetClient struct {
 	// Timeout of read/write operations
@@ -19,8 +26,7 @@ type TelnetClient struct {
 	loginPrompt			string
 	passwordPrompt		string
 
-	reader		bool
-	writer		bool
+	patterns		[]callbackPattern
 }
 
 func New(tout int, prompt string) *TelnetClient {
@@ -64,7 +70,10 @@ func (c *TelnetClient) SetPasswordPrompt(s string) {
 }
 
 func (c *TelnetClient) Close() {
-	c.conn.Close()
+	if !c.closed {
+		c.conn.Close()
+	}
+	c.closed = false
 }
 
 // FlushOpts flushes default options set
@@ -96,6 +105,21 @@ func (c *TelnetClient) Open(host string, port int) error {
 		return err
 	}
 
+	c.closed = false
+
 	return nil
 }
 
+func (c *TelnetClient) RegisterCallback(pattern string, callback func()) error {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return err
+	}
+
+	c.patterns = append(c.patterns, callbackPattern{
+		Cb:callback,
+		Re:re,
+		})
+
+	return nil
+}

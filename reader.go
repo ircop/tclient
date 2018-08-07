@@ -25,18 +25,20 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 	}
 
 	// run reading cycle
+	inSequence := false
+	//skipCurLine := false
 	globalTout := time.After(time.Second * time.Duration(c.TimeoutGlobal))
 	for {
 		select {
 		//case <- c.ctx.Done():
 		//	return c.cutEscapes(buf), nil
 		case <- globalTout:
-			return c.cutEscapes(buf), fmt.Errorf("Operation timeout reached during read")
+			return buf.String() + lastLine.String(), fmt.Errorf("Operation timeout reached during read")
 		default:
 			prev = b
 			b, err = c.readByte()
 			if err != nil {
-				return c.cutEscapes(buf), errors.Wrap(err, "Error during read")
+				return buf.String() + lastLine.String(), errors.Wrap(err, "Error during read")
 			}
 
 			// catch escape sequences
@@ -45,7 +47,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 
 				b2, err := c.readByte()
 				if err != nil {
-					return c.cutEscapes(buf), errors.Wrap(err, "Error while reading escape sequence")
+					return buf.String(), errors.Wrap(err, "Error while reading escape sequence")
 				}
 
 				seq = append(seq, b2)
@@ -54,7 +56,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 					for {
 						bn, err := c.readByte()
 						if err != nil {
-							return c.cutEscapes(buf), errors.Wrap(err, "Error while reading escape subnegotiation sequence")
+							return buf.String(), errors.Wrap(err, "Error while reading escape subnegotiation sequence")
 						}
 						seq = append(seq, bn)
 						if bn == TELNET_SE {
@@ -65,7 +67,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 					// not subsequence.
 					bn, err := c.readByte()
 					if err != nil {
-						return c.cutEscapes(buf), errors.Wrap(err, "Error while reading IAC sequence")
+						return buf.String(), errors.Wrap(err, "Error while reading IAC sequence")
 					}
 					seq = append(seq, bn)
 				}
@@ -73,14 +75,46 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 				// Sequence finished, do something with it:
 				err = c.negotiate(seq)
 				if err != nil {
-					return c.cutEscapes(buf), errors.Wrap(err, "Failed to negotiate connection")
+					return buf.String(), errors.Wrap(err, "Failed to negotiate connection")
 					//c.errChan <- fmt.Sprintf("Failed to negotiate connection: %s", err.Error())
 				}
 			}
 
+			// cut out escape sequences
+			if b == 27 {
+				inSequence = true
+				continue
+			}
+			if inSequence {
+				// 2) 0-?, @-~, ' ' - / === 48-63, 32-47, finish with 64-126
+				if b == 91 {
+					continue
+				}
+				if b >= 32 && b <= 63 {
+					// just skip it
+					continue
+				}
+				if b >= 64 && b <= 126 {
+					// finish sequence
+					inSequence = false
+					continue
+				}
+			}
+
 			// this is not escape sequence, so write this byte to buffer
+			// UPDATE: wirte to buf line by line, not every char. This is because we need to skip some lines (like pagination callbacks)
 			buf.Write([]byte{b})
 			//fmt.Printf("%v\t|\t%s\n",b,string(b))
+
+			// check for regex matching
+			if len(c.patterns) > 0 {
+				for i := range c.patterns {
+					if c.patterns[i].Re.Match(lastLine.Bytes()) {
+						c.patterns[i].Cb()
+						lastLine.Reset()
+					}
+				}
+			}
 
 			// check for CRLF.
 			// We need last line to compare with prompt.
@@ -95,12 +129,13 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 			if rePrompt.Match(lastLine.Bytes()) {
 				// we've catched required prompt.
 				// now remove all escape sequences and return result
-				return c.cutEscapes(buf), nil
+				//return buf.String() + lastLine.String(), nil
+				return buf.String(), nil
 			}
 		}
 	}
 }
-
+/*
 func (c *TelnetClient) cutEscapes(buffer bytes.Buffer) string {
 	bts := buffer.Bytes()
 	result := ""
@@ -132,7 +167,7 @@ func (c *TelnetClient) cutEscapes(buffer bytes.Buffer) string {
 	}
 
 	return result
-}
+}*/
 
 // read one byte from tcp stream
 func (c *TelnetClient) readByte() (byte, error) {
@@ -150,7 +185,6 @@ func (c *TelnetClient) readByte() (byte, error) {
 	if err != nil {
 		return p[0], errors.Wrap(err, "Error during readByte")
 	}
-
 
 	return p[0], nil
 }
