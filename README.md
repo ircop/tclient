@@ -13,7 +13,7 @@ main.go:
 	}
 	defer client.Close()
 
-	// you can omit this, or do auth stuff manually by calling `readUntil` with login/password prompts
+	// you can omit this, or do auth stuff manually by calling `ReadUntil` with login/password prompts
 	out, err := client.Login("script2", "pw3")
 	if err != nil {
 		panic(err)
