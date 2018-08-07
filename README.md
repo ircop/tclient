@@ -36,4 +36,6 @@ Output:
 
 # TODO
 
-Implement pagination parsing/manipulating (various network devices paging their output)
+~~Implement pagination parsing/manipulating (various network devices paging their output)~~
+
+Implement parsing regexps with callbacks. For output pagination purposes, etc.
