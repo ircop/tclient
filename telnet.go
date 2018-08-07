@@ -1,4 +1,4 @@
-// Package ctelnet provides simple telnet client library, mainly designed for iteractions with
+// Package tclient provides simple telnet client library, mainly designed for iteractions with
 // various network equipment such as switches, routers, etc.
 package tclient
 
