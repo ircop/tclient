@@ -32,7 +32,8 @@ type TelnetClient struct {
 	patterns		[]callbackPattern
 }
 
-// New func creates new TelnetClient instance
+// New func creates new TelnetClient instance.
+// First argument is network (r/w) timeout, second is prompt. Default prompt is "(?msi:[\$%#>]$)"
 func New(tout int, prompt string) *TelnetClient {
 	if tout < 1 {
 		tout = 1

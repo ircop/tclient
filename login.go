@@ -1,6 +1,8 @@
 package tclient
 
-// Login is a simple wrapper for login/password auth
+// Login is a simple wrapper for login/password auth.
+// All this func do is waits for specific login/password prompts and sends login/password.
+// You can always implement login manually.
 func (c *TelnetClient) Login(login string, password string) (string, error) {
 	// wait for login
 	result := ""
