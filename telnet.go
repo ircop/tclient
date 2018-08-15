@@ -18,28 +18,32 @@ type callbackPattern struct {
 // TelnetClient is telnet client struct itself
 type TelnetClient struct {
 	// Timeout of read/write operations
-	Timeout		int
+	Timeout			int
 	// TimeoutGlobal is global operation timeout; i.e. like stucked in DLink-like refreshing pagination
-	TimeoutGlobal int
-	prompt        string
-	conn          net.Conn
-	closed        bool
-	Options       []int
+	TimeoutGlobal 	int
+	login			string
+	password		string
+	prompt        	string
+	conn          	net.Conn
+	closed        	bool
+	Options       	[]int
 
-	loginPrompt			string
-	passwordPrompt		string
+	loginPrompt		string
+	passwordPrompt	string
 
 	patterns		[]callbackPattern
 }
 
 // New func creates new TelnetClient instance.
 // First argument is network (r/w) timeout, second is prompt. Default prompt is "(?msi:[\$%#>]$)"
-func New(tout int, prompt string) *TelnetClient {
+func New(tout int, login string, password string, prompt string) *TelnetClient {
 	if tout < 1 {
 		tout = 1
 	}
 	c := TelnetClient{
 		Timeout:        tout,
+		login:			login,
+		password:		password,
 		prompt:         `(?msi:[\$%#>]$)`,
 		loginPrompt:    `[Uu]ser[Nn]ame\:$`,
 		passwordPrompt: `[Pp]ass[Ww]ord\:$`,
@@ -122,7 +126,10 @@ func (c *TelnetClient) Open(host string, port int) error {
 
 	c.closed = false
 
-	return nil
+	// and login right now
+	_, err = c.Login(c.login, c.password)
+
+	return err
 }
 
 // RegisterCallback registers new callback based on regex string. When current output string matches given
