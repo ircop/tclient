@@ -148,7 +148,7 @@ DES-3028:5#`
 		}
 	}()
 
-	out, err := client.ReadUntil(client.Prompt)
+	out, err := client.ReadUntil(client.prompt)
 	if err != nil {
 		t.Fatalf("Error reading prompt: %s\nlast: %s", err.Error(), out)
 	}

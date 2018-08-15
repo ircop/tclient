@@ -20,11 +20,11 @@ type TelnetClient struct {
 	// Timeout of read/write operations
 	Timeout		int
 	// TimeoutGlobal is global operation timeout; i.e. like stucked in DLink-like refreshing pagination
-	TimeoutGlobal	int
-	Prompt		string
-	conn		net.Conn
-	closed		bool
-	Options		[]int
+	TimeoutGlobal int
+	prompt        string
+	conn          net.Conn
+	closed        bool
+	Options       []int
 
 	loginPrompt			string
 	passwordPrompt		string
@@ -39,16 +39,16 @@ func New(tout int, prompt string) *TelnetClient {
 		tout = 1
 	}
 	c := TelnetClient{
-		Timeout: tout,
-		Prompt: `(?msi:[\$%#>]$)`,
-		loginPrompt: `[Uu]ser[Nn]ame\:$`,
+		Timeout:        tout,
+		prompt:         `(?msi:[\$%#>]$)`,
+		loginPrompt:    `[Uu]ser[Nn]ame\:$`,
 		passwordPrompt: `[Pp]ass[Ww]ord\:$`,
-		closed:false,
-		Options: make([]int,0),
+		closed:         false,
+		Options:        make([]int,0),
 	}
 
 	if prompt != "" {
-		c.Prompt = prompt
+		c.prompt = prompt
 	}
 
 	// Global timeout defaults to 3 * rw timeout
@@ -66,6 +66,11 @@ func New(tout int, prompt string) *TelnetClient {
 // we cannot reach read timeout.
 func (c *TelnetClient) GlobalTimeout(t int) {
 	c.TimeoutGlobal = t
+}
+
+// SetPrompt allows you to change prompt without re-creating ssh client
+func (c *TelnetClient) SetPrompt(prompt string) {
+	c.prompt = prompt
 }
 
 // SetLoginPrompt sets custom login prompt. Default is "[Uu]ser[Nn]ame\:$"
