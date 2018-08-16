@@ -51,7 +51,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 
 				b2, err := c.readByte()
 				if err != nil {
-					return buf.String(), errors.Wrap(err, "Error while reading escape sequence")
+					return c.buf.String(), errors.Wrap(err, "Error while reading escape sequence")
 				}
 
 				seq = append(seq, b2)
@@ -60,7 +60,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 					for {
 						bn, err := c.readByte()
 						if err != nil {
-							return buf.String(), errors.Wrap(err, "Error while reading escape subnegotiation sequence")
+							return c.buf.String(), errors.Wrap(err, "Error while reading escape subnegotiation sequence")
 						}
 						seq = append(seq, bn)
 						if bn == TELNET_SE {
@@ -71,7 +71,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 					// not subsequence.
 					bn, err := c.readByte()
 					if err != nil {
-						return buf.String(), errors.Wrap(err, "Error while reading IAC sequence")
+						return c.buf.String(), errors.Wrap(err, "Error while reading IAC sequence")
 					}
 					seq = append(seq, bn)
 				}
@@ -79,7 +79,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 				// Sequence finished, do something with it:
 				err = c.negotiate(seq)
 				if err != nil {
-					return buf.String(), errors.Wrap(err, "Failed to negotiate connection")
+					return c.buf.String(), errors.Wrap(err, "Failed to negotiate connection")
 					//c.errChan <- fmt.Sprintf("Failed to negotiate connection: %s", err.Error())
 				}
 			}
