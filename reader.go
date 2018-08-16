@@ -16,15 +16,16 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 
 	var b byte
 	var prev byte
-	var buf bytes.Buffer
+	c.buf.Reset()
+	//var buf bytes.Buffer
 	var lastLine bytes.Buffer
 	if waitfor == "" {
-		return buf.String(), fmt.Errorf(`Empty "waitfor" string given`)
+		return c.buf.String(), fmt.Errorf(`Empty "waitfor" string given`)
 	}
 
 	rePrompt, err := regexp.Compile(waitfor)
 	if err != nil {
-		return buf.String(), fmt.Errorf(`Cannot compile "waitfor" regexp`)
+		return c.buf.String(), fmt.Errorf(`Cannot compile "waitfor" regexp`)
 	}
 
 	// run reading cycle
@@ -36,12 +37,12 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 		//case <- c.ctx.Done():
 		//	return c.cutEscapes(buf), nil
 		case <- globalTout:
-			return buf.String() + lastLine.String(), fmt.Errorf("Operation timeout reached during read")
+			return c.buf.String() + lastLine.String(), fmt.Errorf("Operation timeout reached during read")
 		default:
 			prev = b
 			b, err = c.readByte()
 			if err != nil {
-				return buf.String() + lastLine.String(), errors.Wrap(err, "Error during read")
+				return c.buf.String() + lastLine.String(), errors.Wrap(err, "Error during read")
 			}
 
 			// catch escape sequences
@@ -107,7 +108,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 			// this is not escape sequence, so write this byte to buffer
 			// update: strip '\r'
 			if b != '\r' {
-				buf.Write([]byte{b})
+				c.buf.Write([]byte{b})
 			}
 
 			// check for regex matching. Execute callback if matched.
@@ -134,7 +135,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 				// we've catched required prompt.
 				// now remove all escape sequences and return result
 				//return buf.String() + lastLine.String(), nil
-				return buf.String(), nil
+				return c.buf.String(), nil
 			}
 		}
 	}

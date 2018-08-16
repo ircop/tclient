@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 	"regexp"
+	"bytes"
 )
 
 type callbackPattern struct {
@@ -30,6 +31,8 @@ type TelnetClient struct {
 
 	loginPrompt		string
 	passwordPrompt	string
+
+	buf				bytes.Buffer
 
 	patterns		[]callbackPattern
 }
@@ -146,4 +149,9 @@ func (c *TelnetClient) RegisterCallback(pattern string, callback func()) error {
 		})
 
 	return nil
+}
+
+// GetBuffer returns current buffer from reader as a string
+func (c *TelnetClient) GetBuffer() string {
+	return c.buf.String()
 }
