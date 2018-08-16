@@ -105,8 +105,10 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 			}
 
 			// this is not escape sequence, so write this byte to buffer
-			// UPDATE: wirte to buf line by line, not every char. This is because we need to skip some lines (like pagination callbacks)
-			buf.Write([]byte{b})
+			// update: strip '\r'
+			if b != '\r' {
+				buf.Write([]byte{b})
+			}
 
 			// check for regex matching. Execute callback if matched.
 			if len(c.patterns) > 0 {
