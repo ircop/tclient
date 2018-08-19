@@ -107,9 +107,9 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 
 			// this is not escape sequence, so write this byte to buffer
 			// update: strip '\r'
-			if b != '\r' {
+			/*if b != '\r' {
 				c.buf.Write([]byte{b})
-			}
+			}*/
 
 			// check for regex matching. Execute callback if matched.
 			if len(c.patterns) > 0 {
@@ -124,6 +124,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 			// check for CRLF.
 			// We need last line to compare with prompt.
 			if b == '\n' && prev == '\r' {
+				c.buf.Write(lastLine.Bytes())
 				lastLine.Reset()
 			} else {
 				lastLine.Write([]byte{b})
