@@ -117,13 +117,18 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 					if c.patterns[i].Re.Match(lastLine.Bytes()) {
 						c.patterns[i].Cb()
 						lastLine.Reset()
+						c.buf.Write([]byte{'\n'})
 					}
 				}
 			}
 
+			if b == '\r' {
+				continue
+			}
 			// check for CRLF.
 			// We need last line to compare with prompt.
 			if b == '\n' && prev == '\r' {
+				lastLine.Write([]byte{b})
 				c.buf.Write(lastLine.Bytes())
 				lastLine.Reset()
 			} else {
