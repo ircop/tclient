@@ -124,7 +124,9 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 
 			// remove \r ; remove backspaces
 			if b == 8 {
-				lastLine.Truncate(lastLine.Len() - 1)
+				if lastLine.Len() > 0 {
+					lastLine.Truncate(lastLine.Len() - 1)
+				}
 				continue
 			}
 			if b == '\r' {
