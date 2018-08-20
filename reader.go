@@ -122,7 +122,8 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 				}
 			}
 
-			if b == '\r' {
+			// remove \r ; remove backspaces
+			if b == '\r' || b == 8 {
 				continue
 			}
 			// check for CRLF.
