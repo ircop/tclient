@@ -147,18 +147,16 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 				lastLine.Write([]byte{b})
 
 				if paged {
-					// if we just paged, regex may not catched end of string like '       \n'
-					if match, err := regexp.Match(`\s+\n`, lastLine.Bytes()); match && err == nil {
+					paged = false
+					// only spaces without any other chars, \n at the end
+					if match, err := regexp.Match(`(?msi:[\s^\n]+$)`, lastLine.Bytes()); match && err == nil {
 						lastLine.Reset()
-						paged = false
-					} else {
-						c.buf.Write(lastLine.Bytes())
-						lastLine.Reset()
+						continue
 					}
-				} else {
-					c.buf.Write(lastLine.Bytes())
-					lastLine.Reset()
 				}
+
+				c.buf.Write(lastLine.Bytes())
+				lastLine.Reset()
 			} else {
 				lastLine.Write([]byte{b})
 			}
