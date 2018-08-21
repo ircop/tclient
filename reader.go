@@ -117,7 +117,12 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 					if c.patterns[i].Re.Match(lastLine.Bytes()) {
 						c.patterns[i].Cb()
 						lastLine.Reset()
-						c.buf.Write([]byte{'\n'})
+						// if last 2 chars in buffer are '\n\n', remove last '\n'
+						bts := c.buf.Bytes()
+						if len(bts) > 2 && bts[len(bts)-1] == '\n' && bts[len(bts)-2] == '\n' {
+							c.buf.Truncate(c.buf.Len()-1)
+						}
+						//c.buf.Write([]byte{'\n'})
 					}
 				}
 			}
@@ -146,9 +151,6 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 			// After reading, we should check for regexp every time.
 			// Unfortunately, we cant wait only CRLF, because prompt usually comes without CRLF.
 			if rePrompt.Match(lastLine.Bytes()) {
-				// we've catched required prompt.
-				// now remove all escape sequences and return result
-				//return buf.String() + lastLine.String(), nil
 				return c.buf.String(), nil
 			}
 		}
