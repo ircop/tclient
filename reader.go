@@ -14,6 +14,9 @@ import (
 func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 	var err error
 
+
+	// one more dirty hack =\ After dlink paging, it MAY BE, or MAY NOT BE one unnecessary empty string with pages + \n. We should strip it.
+	var paged bool
 	var b byte
 	//var prev byte
 	c.buf.Reset()
@@ -122,7 +125,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 						if len(bts) > 2 && bts[len(bts)-1] == '\n' && bts[len(bts)-2] == '\n' {
 							c.buf.Truncate(c.buf.Len()-1)
 						}
-						//c.buf.Write([]byte{'\n'})
+						paged = true
 					}
 				}
 			}
@@ -142,8 +145,20 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 			//if b == '\n' && prev == '\r' {
 			if b == '\n' {
 				lastLine.Write([]byte{b})
-				c.buf.Write(lastLine.Bytes())
-				lastLine.Reset()
+
+				if paged {
+					// if we just paged, regex may not catched end of string like '       \n'
+					if match, err := regexp.Match(`\s+\n`, lastLine.Bytes()); match && err == nil {
+						lastLine.Reset()
+						paged = false
+					} else {
+						c.buf.Write(lastLine.Bytes())
+						lastLine.Reset()
+					}
+				} else {
+					c.buf.Write(lastLine.Bytes())
+					lastLine.Reset()
+				}
 			} else {
 				lastLine.Write([]byte{b})
 			}
