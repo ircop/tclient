@@ -75,6 +75,11 @@ func (c *TelnetClient) GlobalTimeout(t int) {
 	c.TimeoutGlobal = t
 }
 
+// You may need to change password for enable (because prompt is same as login)
+func (c *TelnetClient) SetPassword(pw string) {
+	c.password = pw
+}
+
 // SetPrompt allows you to change prompt without re-creating ssh client
 func (c *TelnetClient) SetPrompt(prompt string) {
 	c.prompt = prompt
