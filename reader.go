@@ -15,7 +15,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 	var err error
 
 	var b byte
-	var prev byte
+	//var prev byte
 	c.buf.Reset()
 	//var buf bytes.Buffer
 	var lastLine bytes.Buffer
@@ -39,7 +39,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 		case <- globalTout:
 			return c.buf.String() + lastLine.String(), fmt.Errorf("Operation timeout reached during read")
 		default:
-			prev = b
+			//prev = b
 			b, err = c.readByte()
 			if err != nil {
 				return c.buf.String() + lastLine.String(), errors.Wrap(err, "Error during read")
@@ -134,7 +134,8 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 			}
 			// check for CRLF.
 			// We need last line to compare with prompt.
-			if b == '\n' && prev == '\r' {
+			//if b == '\n' && prev == '\r' {
+			if b == '\n' {
 				lastLine.Write([]byte{b})
 				c.buf.Write(lastLine.Bytes())
 				lastLine.Reset()
