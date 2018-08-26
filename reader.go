@@ -108,6 +108,25 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 				}
 			}
 
+			// not IAC sequence, but IAC char =\
+			if b == TELNET_IAC {
+				continue
+			}
+
+			// remove \r ; remove backspaces
+			if b == 8 {
+				if lastLine.Len() > 0 {
+					lastLine.Truncate(lastLine.Len() - 1)
+				}
+				continue
+			}
+			if b == '\r' {
+				continue
+			}
+
+			//fmt.Printf("%s | %d\n", string(b), b)
+			//fmt.Printf("%s", string(b))
+
 			// this is not escape sequence, so write this byte to buffer
 			// update: strip '\r'
 			/*if b != '\r' {
@@ -130,16 +149,6 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 				}
 			}
 
-			// remove \r ; remove backspaces
-			if b == 8 {
-				if lastLine.Len() > 0 {
-					lastLine.Truncate(lastLine.Len() - 1)
-				}
-				continue
-			}
-			if b == '\r' {
-				continue
-			}
 			// check for CRLF.
 			// We need last line to compare with prompt.
 			//if b == '\n' && prev == '\r' {

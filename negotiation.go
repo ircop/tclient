@@ -1,11 +1,13 @@
 package tclient
 
+// ignore: TELNET_AYT, TELNET_AO
+// accept: 0x01, 0x03, 0x18, 0x1f == TELOPT_ECHO, TELOPT_SGA, TELOPT_TTYPE, TELOPT_NAWS
 func (c *TelnetClient) negotiate(sequence []byte) error {
 	if len(sequence) < 3 {
 		// do nothing
 		return nil
 	}
-
+	//fmt.Println(sequence)
 	var err error
 
 	// DO sequence
@@ -29,6 +31,16 @@ func (c *TelnetClient) negotiate(sequence []byte) error {
 		}
 	}
 
+	// WONT -> DONT
+	if sequence[1] == TELNET_WONT && len(sequence) == 3 {
+		err = c.WriteRaw([]byte{TELNET_IAC, TELNET_DONT, sequence[2]})
+	}
+
+	// WILL -> DO
+	if sequence[1] == TELNET_WILL && len(sequence) == 3 {
+		err = c.WriteRaw([]byte{TELNET_IAC, TELNET_DO, sequence[2]})
+	}
+
 	// subseq SEND request
 	if len(sequence) == 6 && sequence[1] == TELNET_SB && sequence[3] == TELOPT_SB_SEND {
 		// what to send?
@@ -42,6 +54,8 @@ func (c *TelnetClient) negotiate(sequence []byte) error {
 			err = c.WriteRaw([]byte{TELNET_IAC, TELNET_SB, TELOPT_SB_NEV_ENVIRON, TELOPT_SB_IS, TELNET_IAC, TELNET_SE})
 			break
 		default:
+			// accept all
+			err = c.WriteRaw([]byte{TELNET_IAC, TELNET_SB, sequence[2], 0, TELNET_IAC, TELNET_SE})
 			break
 		}
 	}

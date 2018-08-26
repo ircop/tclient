@@ -48,7 +48,7 @@ func New(tout int, login string, password string, prompt string) *TelnetClient {
 		login:			login,
 		password:		password,
 		prompt:         `(?msi:[\$%#>]$)`,
-		loginPrompt:    `[Uu]ser(\s)?[Nn]ame\:$`,
+		loginPrompt:    `[Uu]ser(\s)?[Nn]ame\:(\s+)?$`,
 		passwordPrompt: `[Pp]ass[Ww]ord\:$`,
 		closed:         false,
 		Options:        make([]int,0),

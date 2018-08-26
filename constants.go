@@ -106,6 +106,8 @@ const (
 	TELOPT_TTYLOC		= 28
 	// TELOPT_NAWS - Negotiate About Window Size
 	TELOPT_NAWS			= 31
+	// TELOPT_FLOWCTRL - remote flow control
+	TELOPT_FLOWCTRL		= 33
 
 	// TELOPT_SB_SEND SEND subneg
 	TELOPT_SB_SEND		= 1
