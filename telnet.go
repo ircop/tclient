@@ -90,6 +90,10 @@ func (c *TelnetClient) SetLoginPrompt(s string) {
 	c.loginPrompt = s
 }
 
+func (c *TelnetClient) SetLogin(login string) {
+	c.login = login
+}
+
 // SetPasswordPrompt sets custom password prompt. Default is "[Pp]ass[Ww]ord\:$"
 func (c *TelnetClient) SetPasswordPrompt(s string) {
 	c.passwordPrompt = s
