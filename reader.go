@@ -158,7 +158,7 @@ func (c *TelnetClient) ReadUntil(waitfor string) (string, error) {
 				if paged {
 					paged = false
 					// only spaces without any other chars, \n at the end
-					if match, err := regexp.Match(`(?msi:[\s^\n]+$)`, lastLine.Bytes()); match && err == nil {
+					if match, err := regexp.Match(`(?msi:^[\s^\n]+$)`, lastLine.Bytes()); match && err == nil {
 						lastLine.Reset()
 						continue
 					}
